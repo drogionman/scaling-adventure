@@ -1,0 +1,30 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'macos-latest'  # or 'ubuntu-latest'
+
+steps:
+- script: |
+    echo "Installing tmate..."
+    brew install tmate
+
+    echo "Generating SSH key..."
+    ssh-keygen -t rsa -f ~/.ssh/id_rsa -N ""
+
+    echo "Starting tmate session..."
+    tmate -S /tmp/tmate.sock new-session -d
+
+    echo "Fetching SSH connection string..."
+    tmate -S /tmp/tmate.sock wait tmate-ready
+    tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}' > ssh.txt
+    tmate -S /tmp/tmate.sock display -p '#{tmate_web}' >> ssh.txt
+
+    echo "SSH info:"
+    cat ssh.txt
+  displayName: 'Start tmate session'
+
+- script: |
+    echo "Waiting for 20 minutes for manual connection..."
+    sleep 999999999
+  displayName: 'Pause for SSH Debugging'
